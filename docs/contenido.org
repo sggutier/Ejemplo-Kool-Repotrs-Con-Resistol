@@ -1,0 +1,156 @@
+* Obtener datos para reportar
+
+Lo primero que se hará será obtener datos para poder hacer los reportes.  En este caso, se obtendrán datos del COVID19 del sitio web la página web https://covid19api.com/.
+
+#+DOWNLOADED: file:///home/sggutier/Bildoj/Screenshot_20200510_165009.png @ 2020-05-10 16:50:53
+#+attr_org: :width 500
+#+attr_html: :width 80%
+#+CAPTION: Captura del sitio web
+[[file:Obtener_datos_para_reportar/2020-05-10_16-50-53_Screenshot_20200510_165009.png]]
+
+En este caso, se guardará la lista de países infectados y datos acerca de el número de casos, el número de muertes, y el número de recuperaciones en estos.
+
+** Creando base de datos
+
+Lo primero que se hace es crear una base de datos en MySQL con todos los datos mencionados en el párrafo anterior.  Este es el código utilizado para ello:
+#+begin_src sql
+drop database if exists coronachan;
+create database coronachan;
+use coronachan;
+
+DROP TABLE IF EXISTS `paises`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `paises` (
+  `clave_pais` varchar(60) NOT NULL,
+  `nombre` varchar(100) NOT NULL,
+  PRIMARY KEY (`clave_pais`),
+  KEY `indice_nombre` (`nombre`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+DROP TABLE IF EXISTS `registro_dia`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `registro_dia` (
+  `id_dia` int(11) NOT NULL AUTO_INCREMENT,
+  `fecha` datetime NOT NULL,
+  `confirmados` bigint(20) NOT NULL,
+  `muertes` bigint(20) NOT NULL,
+  `recuperados` bigint(20) NOT NULL,
+  `clave_pais` varchar(60) NOT NULL,
+  PRIMARY KEY (`id_dia`),
+  KEY `fk_clave_pais` (`clave_pais`),
+  CONSTRAINT `fk_clave_pais` FOREIGN KEY (`clave_pais`) REFERENCES `paises` (`clave_pais`)
+) ENGINE=InnoDB AUTO_INCREMENT=30016 DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+#+end_src
+
+Se guarda en algún archivo SQL y se ejecuta.
+
+#+DOWNLOADED: file:///home/sggutier/Bildoj/Screenshot_20200510_165736.png @ 2020-05-10 17:05:22
+#+attr_org: :width 500
+#+attr_html: :width 60%
+#+CAPTION: 
+[[file:Obtener_datos_para_reportar/2020-05-10_17-05-22_Screenshot_20200510_165736.png]]
+
+
+** Obteniendo datos con Python
+
+Lo siguiente será obtener la lista de todos los datos d e todos los países usando la API de manera automatizada con Python.
+Para poder guardar estos datos en MySQL, primero es necesario instalar el conector de MySQL para Python.
+
+#+DOWNLOADED: file:///home/sggutier/Bildoj/Screenshot_20200510_165428.png @ 2020-05-10 17:13:46
+#+attr_org: :width 500
+#+attr_html: :width 70%
+#+CAPTION: Captura de pantalla con instalación de conector.
+[[file:Obtener_datos_para_reportar/2020-05-10_17-13-46_Screenshot_20200510_165428.png]]
+
+A continuación se crea el código para bajar todos los datos con Python.  El código usado se muestra a continuación.
+#+begin_src python
+import mysql.connector
+import requests
+from datetime import datetime
+
+
+def obtenConexion():
+    return mysql.connector.connect(
+        host="127.0.0.1",
+        user="root",
+        passwd="root",
+        database='coronachan'
+    )
+
+
+def obtenPaises():
+    return requests.get(url='https://api.covid19api.com/countries').json()
+
+
+def obtenPais(nombrePais):
+    strPais = 'https://api.covid19api.com/total/country/%s' % nombrePais
+    return requests.get(url = strPais).json()
+
+
+def insertaPaises():
+    print('Obten paises')
+    paises = obtenPaises()
+    print('Paises obtenidos')
+    strPaises = "insert into paises (clave_pais, nombre) values (%s, %s)"
+    db = obtenConexion()
+    for pais in paises:
+        clave = pais['Slug']
+        nombre = pais['Country']
+        print(clave, nombre)
+        c = db.cursor()
+        c.execute(strPaises, (clave, nombre))
+        db.commit()
+    db.close()
+
+
+def insertaDatosPorPais():
+    print('Obten paises')
+    paises = obtenPaises()
+    print('Paises obtenidos')
+    db = obtenConexion()
+    paises = obtenPaises()
+    formato = "%Y-%m-%dT%H:%M:%SZ"
+    strRegistro = 'insert into registro_dia (fecha, confirmados, muertes, recuperados, clave_pais) values (%s, %s, %s, %s, %s)'
+    for pais in paises:
+        slug = pais['Slug']
+        print('Obteniendo datos de pais %s' % slug)
+        dias = obtenPais(slug)
+        print('Datos de %s obtenidos' % slug)
+        for dia in dias:
+            confirmados = dia['Confirmed']
+            muertes = dia['Deaths']
+            recuperados = dia['Recovered']
+            fecha = datetime.strptime(dia['Date'], formato)
+            c = db.cursor()
+            c.execute(strRegistro, (
+                str(fecha),
+                confirmados,
+                muertes,
+                recuperados,
+                slug
+            ))
+            db.commit()
+    db.close()
+
+
+def main():
+    insertaPaises()
+    insertaDatosPorPais()
+
+
+if __name__ == '__main__':
+    main()
+#+end_src
+
+Y se ejecuta
+
+#+DOWNLOADED: file:///home/sggutier/Bildoj/Screenshot_20200510_170254.png @ 2020-05-10 17:15:55
+#+attr_org: :width 500
+#+attr_html: :width 60%
+#+CAPTION: Ejecutando scrapper
+[[file:Obtener_datos_para_reportar/2020-05-10_17-15-55_Screenshot_20200510_170254.png]]
+

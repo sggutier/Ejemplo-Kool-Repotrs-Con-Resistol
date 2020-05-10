@@ -1,0 +1,22 @@
+#+author:Saúl Germán Gutiérrez Calderón
+#+escuela:Instituto Tecnológico Superior del Sur de Guanajuato
+#+asignatura:Programación Web III
+#+carrera:Ingeniería en Sistemas Computacionales
+#+docente:Oswaldo López Fuentes
+#+tareano:Unidad 5, Actividad 2
+#+lugar:Uriangato, Gto.
+#+title:Generar Reporte
+#+subject:informe
+#+keywords:[Informe, IoT]
+#+lang:es
+#+papersize:letter
+#+logo:lsc.pdf
+#+fontsize:12pt
+#+logo-width:120
+#+table-use-row-colors:false
+#+colorlinks:true
+#+caption-justification:centering
+
+#+BEGIN_EXPORT LATEX
+\pagebreak
+#+END_EXPORT
