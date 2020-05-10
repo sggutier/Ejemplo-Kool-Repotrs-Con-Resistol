@@ -154,3 +154,23 @@ Y se ejecuta
 #+CAPTION: Ejecutando scrapper
 [[file:Obtener_datos_para_reportar/2020-05-10_17-15-55_Screenshot_20200510_170254.png]]
 
+* Configurando Php
+
+Se da por hecho que Php ya estaba configurando con algún conector para MySQL.  Si no, es necesario configurar Php y además su conector con MySQL.
+Lo mismo para Composer.
+
+La herramienta que se usará para crear los reportes se llama *Kool Reports*.
+
+#+DOWNLOADED: file:///home/sggutier/Bildoj/Screenshot_20200510_172227.png @ 2020-05-10 17:23:06
+#+attr_org: :width 500
+#+attr_html: :width 80%
+#+CAPTION: Captura de pantalla de Kool Reports
+[[file:Configurando_Php/2020-05-10_17-23-06_Screenshot_20200510_172227.png]]
+
+Esto se instala con Composer.  Es necesario ir a la raíz de donde valla a estar el proyecto, y ejecutar lo siguiente:
+#+DOWNLOADED: file:///home/sggutier/Bildoj/Screenshot_20200510_172352.png @ 2020-05-10 17:24:10
+#+attr_org: :width 500
+#+attr_html: :width 80%
+#+CAPTION: Instalación de koolreport
+[[file:Configurando_Php/2020-05-10_17-24-10_Screenshot_20200510_172352.png]]
+
