@@ -624,7 +624,7 @@ page.open( 'http://localhost:8001/export.php?peticion=si', function( status ) {
 Este script es horriblemente específico porque necesitamos especificarle la ruta de la página web de donde se descargará el pdf.  Por ahí
 también hay otras opciones, como ~&T~ para especificar partes de las cabecera.  Nótese que en este caso especificamos el puerto 8001.  Esto es necesario
 mientras hagamos pruebas de manera local si estamos usando el servidor web que php tiene incluido en lugar de algún otro.  El servidor interno de php 
-solo puede tener un proceso,  por lo que se necesitan 2 para que el servidor pueda mandar a llamarse a si mismo para randerizar la página en 
+solo puede tener un proceso,  por lo que se necesitan 2 para que el servidor pueda mandar a llamarse a si mismo para renderizar la página en 
 un navegador web sin cabeza del lado del servidor.
 
 Finalmente, ejecutamos esta monstruosidad pegada con cinta adhesiva en dos servidores web internos:
