@@ -20,4 +20,5 @@ page.open( 'http://localhost:8001/export.php?peticion=si', function( status ) {
             phantom.exit();
         },1000);
     }
+    else { phantom.exit(); }
 });

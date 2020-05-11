@@ -1,3 +1,3 @@
 #!/bin/bash
-export SLIMERJSLAUNCHER=/home/sggutier/.local/opt/fireviejo/firefox
+export SLIMERJSLAUNCHER=$HOME/.local/opt/fireviejo/firefox
 slimerjs --headless scriptNavegador.js $1
