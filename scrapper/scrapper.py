@@ -25,14 +25,15 @@ def insertaPaises():
     print('Obten paises')
     paises = obtenPaises()
     print('Paises obtenidos')
-    strPaises = "insert into paises (clave_pais, nombre) values (%s, %s)"
+    strPaises = "insert into paises (clave_pais, nombre, iso2) values (%s, %s, %s)"
     db = obtenConexion()
     for pais in paises:
         clave = pais['Slug']
         nombre = pais['Country']
-        print(clave, nombre)
+        iso2 = pais['ISO2']
+        print(clave, nombre, iso2)
         c = db.cursor()
-        c.execute(strPaises, (clave, nombre))
+        c.execute(strPaises, (clave, nombre, iso2))
         db.commit()
     db.close()
 

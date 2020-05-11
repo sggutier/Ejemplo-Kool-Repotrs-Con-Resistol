@@ -24,8 +24,10 @@ DROP TABLE IF EXISTS `paises`;
 CREATE TABLE `paises` (
   `clave_pais` varchar(60) NOT NULL,
   `nombre` varchar(100) NOT NULL,
+  `iso2` varchar(100) NOT NULL,
   PRIMARY KEY (`clave_pais`),
   KEY `indice_nombre` (`nombre`)
+  KEY `indice_iso` (`iso2`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -95,14 +97,15 @@ def insertaPaises():
     print('Obten paises')
     paises = obtenPaises()
     print('Paises obtenidos')
-    strPaises = "insert into paises (clave_pais, nombre) values (%s, %s)"
+    strPaises = "insert into paises (clave_pais, nombre, iso2) values (%s, %s, %s)"
     db = obtenConexion()
     for pais in paises:
         clave = pais['Slug']
         nombre = pais['Country']
-        print(clave, nombre)
+        iso2 = pais['ISO2']
+        print(clave, nombre, iso2)
         c = db.cursor()
-        c.execute(strPaises, (clave, nombre))
+        c.execute(strPaises, (clave, nombre, iso2))
         db.commit()
     db.close()
 
