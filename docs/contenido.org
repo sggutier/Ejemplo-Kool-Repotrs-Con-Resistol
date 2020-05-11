@@ -402,9 +402,9 @@ Con todo esto, ya debería ser posible ver la página web.
 
 La siguiente parte depende de o pagarle 50 dólares a Kool Reports o intentar hacer algo hecho con resistol nosotros mismos y sentirnos estafados porque
 Kool Reports cobra por generar pdfs.  A continuación, debemos enojarnos porque encima de todo la gente de Kool Reports usa PhantomJs para usar un chrome
-del lado del servidor para randerizar páginas web y convertirlas a pdf.  Nosotros vamos a hacer algo similar pero gratis.
+del lado del servidor para renderizar páginas web y convertirlas a pdf.  Nosotros vamos a hacer algo similar pero gratis.
 
-Primero es necesario crear una página únicamente para randerizar Pdfs.
+Primero es necesario crear una página únicamente para renderizar Pdfs.
 #+begin_src php
 <?php
 use \koolreport\widgets\koolphp\Table;
