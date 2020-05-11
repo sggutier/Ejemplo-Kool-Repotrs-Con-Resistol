@@ -80,3 +80,6 @@ flycheck_*.el
 
 # No permitir pdfs
 *.pdf
+
+# Idea
+.idea

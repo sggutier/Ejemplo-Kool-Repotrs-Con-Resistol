@@ -177,3 +177,223 @@ Esto se instala con Composer.  Es necesario ir a la raíz de donde valla a estar
 #+CAPTION: Instalación de koolreport
 [[file:Configurando_Php/2020-05-10_17-24-10_Screenshot_20200510_172352.png]]
 
+* Creando visualización en HTML
+
+Lo primero que se necesita es el HTML necesario para mostrar la página.  Solo habrá una página, y sus contenidos se deberán poner en ~index.php~.
+#+begin_src php
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Pagina con reportes del coronavirus :v">
+    <meta name="author" content="German Gutierrez">
+    <meta name="keywords" content="php reportes framework">
+    <title>Reporte de Coronavirus</title>
+
+    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/simple-line-icons/2.4.1/css/simple-line-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+</head>
+<body>
+<?php
+
+require_once "CoronaPorPais.php";
+$report = new CoronaPorPais();
+$report->run()->render();
+?>
+</body>
+</html>
+#+end_src
+
+Esto incluye también varias librerías de frontend como bootstrap y font-awesome.  
+
+Se puede notar que aquí se está usando un archivo llamado ~CoronaPorPais.php~.  Para Kool Report, es necesario crear una clase con cierto nombre y
+una adicional para la visualización.  En este caso, queremos crear un reporte específico para coronavirus, por lo que se creará un archivo
+y una clase con esos nombres.
+
+** Clase de reporte de Kool Report
+
+En esta clase no hay que hacer mucho más que crearla heredando de \ koolreport \ KoolReport, y hacer algunas configuraciones en algunos
+de sus archivos.
+#+begin_src php
+<?php
+require_once __DIR__ . '/vendor/autoload.php';
+
+use \koolreport\processes\CalculatedColumn;
+use \koolreport\processes\ColumnMeta;
+
+class CoronaPorPais extends \koolreport\KoolReport
+{
+    public function settings()
+    {
+        $this->dia = date('Y-m-d H:i:s');
+        return array(
+            "dataSources" => array(
+                "coronachan" => array(
+                "connectionString" => "mysql:host=localhost;dbname=coronachan",
+                "username" => "root",
+                "password" => "root",
+                "charset" => "utf8"
+                )
+            )
+        );
+    }
+
+    public function setup()
+    {
+        $this->src('coronachan')
+            ->query("
+            select p.clave_pais, rd.confirmados, rd.muertes, rd.recuperados, p.iso2, p.nombre
+            from paises as p join registro_dia rd on p.clave_pais = rd.clave_pais
+            where date(rd.fecha) = (select max(date(fecha)) from registro_dia where date(fecha) < date('{$this->dia}'));
+        ")
+            ->pipe($this->dataStore("casos"));
+    }
+}
+#+end_src
+
+En el método ~settings~ se configuran las fuentes de datos, en este caso una conexión de MySQL.  En ~setup~ se configuran cada una de las fuentes
+especificadas en settings.
+
+** Creación de vista de HTML
+
+El siguiente paso es añadir la visualización de la página web.
+#+begin_src php
+<?php
+use \koolreport\widgets\koolphp\Table;
+use \koolreport\widgets\google\GeoChart;
+?>
+<div class='report-content'>
+    <div class="text-center">
+        <h1>Reporte de COVID-19</h1>
+        <p class="lead">Casos confirmados, muertes, y recuperados país</p>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-4">
+    <?php
+    GeoChart::create(array(
+        "dataStore"=>$this->dataStore("casos"),
+        "columns"=>array(
+            "iso2"=>array(
+                "label"=>"País"
+            ),
+            "confirmados"=>array(
+                "label"=>"Casos Confirmados",
+                "type"=>"number",
+                "prefix"=>""
+            ),
+        ),
+        "width"=>"100%",
+        "options"=>array(
+            "showTooltip"=> true,
+            "showInfoWindow"=> true,
+            "colorAxis" => ["colors"=> ['white', 'yellow']]
+        )
+    ));
+    ?>
+            <p class="lead">Confirmados</p>
+        </div>
+
+        <div class="col-lg-4">
+            <?php
+            GeoChart::create(array(
+                "dataStore"=>$this->dataStore("casos"),
+                "columns"=>array(
+                    "iso2"=>array(
+                        "label"=>"País"
+                    ),
+                    "muertes"=>array(
+                        "label"=>"Muertes",
+                        "type"=>"number",
+                        "prefix"=>""
+                    ),
+                ),
+                "width"=>"100%",
+                "options"=>array(
+                    "showTooltip"=> true,
+                    "showInfoWindow"=> true,
+                    "colorAxis" => ["colors"=> ['white', 'red']]
+                )
+            ));
+            ?>
+            <p class="lead">Muertes</p>
+        </div>
+
+        <div class="col-lg-4">
+            <?php
+            GeoChart::create(array(
+                "dataStore"=>$this->dataStore("casos"),
+                "columns"=>array(
+                    "iso2"=>array(
+                        "label"=>"País"
+                    ),
+                    "recuperados"=>array(
+                        "label"=>"Recuperados",
+                        "type"=>"number",
+                        "prefix"=>""
+                    ),
+                ),
+                "width"=>"100%",
+                "options"=>array(
+                    "showTooltip"=> true,
+                    "showInfoWindow"=> true,
+                    "colorAxis" => ["colors"=> ['white', 'green']]
+                )
+            ));
+            ?>
+            <p class="lead">Recuperados</p>
+        </div>
+    </div>
+
+    <?php
+    Table::create(array(
+        "dataStore"=>$this->dataStore("casos")->sort(array("confirmados"=>"desc")),
+        "columns"=>array(
+            "nombre"=>array(
+                "label"=>"País"
+            ),
+            "confirmados"=>array(
+                "label"=>"Casos confirmados",
+                "type"=>"number",
+                "prefix"=>"",
+            ),
+            "muertes"=>array(
+                "label"=>"Muertes",
+                "type"=>"number",
+                "prefix"=>"",
+            ),
+            "recuperados"=>array(
+                "label"=>"Recuperados",
+                "type"=>"number",
+                "prefix"=>"",
+            )
+        ),
+        "paging"=>array(
+            "pageSize"=>10,
+        ),
+        "cssClass"=>array(
+            "table"=>"table table-bordered table-striped"
+        )
+    ));
+    ?>
+</div>
+#+end_src
+
+En general esto se hace como una página web común y corriente, excepto por las partes donde se pueden crear tablas, mapas, y otras cosas.  Los
+mapas pueden ser creados con ~GeoChart::Create~ y las tablas con ~Table::create~.  En ambos casos, es necesario configurar el origen de los datos
+con la llave ~dataStore~.  Esta fuente de datos debe coincidir con las especificadas en el ~setup~ de la clase (en nuestro caso, se configuró al final con un pipe).
+
+Con todo esto, ya debería ser posible ver la página web.
+
+#+DOWNLOADED: file://home/sggutier/Bildoj/Screenshot_2020-05-10%20Reporte%20de%20Coronavirus.png @ 2020-05-10 19:36:45
+#+attr_org: :width 500
+#+attr_html: :width 100%
+#+CAPTION: Captura de pantalla del sitio web
+[[file:Creando_visualizacion_en_HTML/visualizacion.png]]
+
