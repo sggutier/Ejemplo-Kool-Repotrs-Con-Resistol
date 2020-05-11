@@ -397,3 +397,249 @@ Con todo esto, ya debería ser posible ver la página web.
 #+CAPTION: Captura de pantalla del sitio web
 [[file:Creando_visualizacion_en_HTML/visualizacion.png]]
 
+
+* Creando reportes en PDF
+
+La siguiente parte depende de o pagarle 50 dólares a Kool Reports o intentar hacer algo hecho con resistol nosotros mismos y sentirnos estafados porque
+Kool Reports cobra por generar pdfs.  A continuación, debemos enojarnos porque encima de todo la gente de Kool Reports usa PhantomJs para usar un chrome
+del lado del servidor para randerizar páginas web y convertirlas a pdf.  Nosotros vamos a hacer algo similar pero gratis.
+
+Primero es necesario crear una página únicamente para randerizar Pdfs.
+#+begin_src php
+<?php
+use \koolreport\widgets\koolphp\Table;
+use \koolreport\widgets\google\GeoChart;
+?>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Pagina con reportes del coronavirus :v">
+    <meta name="author" content="German Gutierrez">
+    <meta name="keywords" content="php reportes framework">
+    <title>Reporte de Coronavirus</title>
+
+    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/simple-line-icons/2.4.1/css/simple-line-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+</head>
+<body>
+<html>
+    <div class="text-center">
+        <h1>Reporte de COVID-19</h1>
+        <h4>Casos confirmados, muertes, y recuperados país</h4>
+    </div>
+
+    <hr/>
+
+    <div class="row">
+        <div class="col-12">
+    <?php
+    GeoChart::create(array(
+        "dataStore"=>$this->dataStore("casos"),
+        "columns"=>array(
+            "iso2"=>array(
+                "label"=>"País"
+            ),
+            "confirmados"=>array(
+                "label"=>"Casos Confirmados",
+                "type"=>"number",
+                "prefix"=>""
+            ),
+        ),
+        "width"=>"100%",
+        "options"=>array(
+            "showTooltip"=> true,
+            "showInfoWindow"=> true,
+            "colorAxis" => ["colors"=> ['white', 'yellow']]
+        )
+    ));
+    ?>
+            <p class="lead">Confirmados</p>
+        </div>
+
+        <div class="col-12">
+            <?php
+            GeoChart::create(array(
+                "dataStore"=>$this->dataStore("casos"),
+                "columns"=>array(
+                    "iso2"=>array(
+                        "label"=>"País"
+                    ),
+                    "muertes"=>array(
+                        "label"=>"Muertes",
+                        "type"=>"number",
+                        "prefix"=>""
+                    ),
+                ),
+                "width"=>"100%",
+                "options"=>array(
+                    "showTooltip"=> true,
+                    "showInfoWindow"=> true,
+                    "colorAxis" => ["colors"=> ['white', 'red']]
+                )
+            ));
+            ?>
+            <p class="lead">Muertes</p>
+        </div>
+
+        <div class="col-12">
+            <?php
+            GeoChart::create(array(
+                "dataStore"=>$this->dataStore("casos"),
+                "columns"=>array(
+                    "iso2"=>array(
+                        "label"=>"País"
+                    ),
+                    "recuperados"=>array(
+                        "label"=>"Recuperados",
+                        "type"=>"number",
+                        "prefix"=>""
+                    ),
+                ),
+                "width"=>"100%",
+                "options"=>array(
+                    "showTooltip"=> true,
+                    "showInfoWindow"=> true,
+                    "colorAxis" => ["colors"=> ['white', 'green']]
+                )
+            ));
+            ?>
+            <p class="lead">Recuperados</p>
+        </div>
+    </div>
+
+    <?php
+    Table::create(array(
+        "dataStore"=>$this->dataStore("casos")->sort(array("confirmados"=>"desc")),
+        "columns"=>array(
+            "nombre"=>array(
+                "label"=>"País"
+            ),
+            "confirmados"=>array(
+                "label"=>"Casos confirmados",
+                "type"=>"number",
+                "prefix"=>"",
+            ),
+            "muertes"=>array(
+                "label"=>"Muertes",
+                "type"=>"number",
+                "prefix"=>"",
+            ),
+            "recuperados"=>array(
+                "label"=>"Recuperados",
+                "type"=>"number",
+                "prefix"=>"",
+            )
+        ),
+        "cssClass"=>array(
+            "table"=>"table table-bordered table-striped"
+        )
+    ));
+    ?>
+</body>
+</html>
+#+end_src
+
+A continuación, se crea una página para descargar el pdf.  Se agrega un link a la página principal para esto.
+#+begin_src php
+<?php
+
+if($_GET["peticion"]) {
+    require_once "CoronaPorPais.php";
+    $report = new CoronaPorPais();
+
+    $report->run()->render('CoronaPorPaisPdf');
+}
+else {
+    $nombrePdf = '';
+    $vals = array_merge(range(0, 9), range('a', 'z'));
+    for ($i = 0; $i < 50; $i++) {
+        $nombrePdf .= $vals[array_rand($vals)];
+    }
+    $nombrePdf .= ".pdf";
+    exec('./generaPdf.sh ' . $nombrePdf);
+    $attachment_location = $_SERVER["DOCUMENT_ROOT"] . '/' . $nombrePdf;
+    if (file_exists($attachment_location)) {
+        header($_SERVER["SERVER_PROTOCOL"] . " 200 OK");
+        header("Cache-Control: public"); // needed for internet explorer
+        header("Content-Type: application/pdf");
+        header("Content-Transfer-Encoding: Binary");
+        header("Content-Length:".filesize($attachment_location));
+        header("Content-Disposition: attachment; filename=reporte_covid.pdf");
+        readfile($attachment_location);
+        unlink($attachment_location);
+        die();
+    } else {
+        die("Error: File not found.");
+    }
+}
+#+end_src
+
+En seguida, se instala slimerjs.  Esto sirve para crear scripts donde se le ordena hacer cosas a un motor web, en particular para gecko.
+
+#+DOWNLOADED: file:///home/sggutier/Bildoj/Screenshot_20200510_231308.png @ 2020-05-10 23:13:50
+#+attr_org: :width 500
+#+attr_html: :width 80%
+#+CAPTION: Instalación de slimerjs
+[[file:Creando_reportes_en_PDF/2020-05-10_23-13-50_Screenshot_20200510_231308.png]]
+
+Una vez instalado, se crea un script llamado ~generaPdf.sh~.  El contenido debe ser similar al siguiente:
+#+begin_src shell
+#!/bin/bash
+export SLIMERJSLAUNCHER=/home/sggutier/.local/opt/fireviejo/firefox
+slimerjs --headless scriptNavegador.js $1
+#+end_src
+
+En la variable ~SLIMJSLAUNCHER~ es necesario especificar la ruta de un binario de firefox entre las versiones 56 y 59 específicamente.
+#+begin_src javascript
+var page = require('webpage').create();
+var system = require('system');
+var width=1280;
+var height=1024;
+page.viewportSize = {width: width, height: height};
+page.paperSize={
+    format: 'letter',
+    orientation: 'portrait',
+    margin: '2cm',
+    headerStr:{left:'', center:'&T', right:''},
+    footerStr:{left:'', center:'', right:'&P de &L'}
+}
+output = system.args[1];
+page.open( 'http://localhost:8001/export.php?peticion=si', function( status ) {
+    console.log( "Status: " + status );
+    if ( status === "success" ) {
+        // Se espera como 1 segundo a que la pagina cargue todas sus weas internas de javascript
+        setTimeout( function() {
+            page.render( output );
+            phantom.exit();
+        },1000);
+    }
+});
+#+end_src
+
+Este script es horriblemente específico porque necesitamos especificarle la ruta de la página web de donde se descargará el pdf.  Por ahí
+también hay otras opciones, como ~&T~ para especificar partes de las cabecera.  Nótese que en este caso especificamos el puerto 8001.  Esto es necesario
+mientras hagamos pruebas de manera local si estamos usando el servidor web que php tiene incluido en lugar de algún otro.  El servidor interno de php 
+solo puede tener un proceso,  por lo que se necesitan 2 para que el servidor pueda mandar a llamarse a si mismo para randerizar la página en 
+un navegador web sin cabeza del lado del servidor.
+
+Finalmente, ejecutamos esta monstruosidad pegada con cinta adhesiva en dos servidores web internos:
+
+#+DOWNLOADED: file:///home/sggutier/Bildoj/Screenshot_20200510_232651.png @ 2020-05-10 23:27:19
+#+attr_org: :width 500
+#+attr_html: :width 80%
+#+CAPTION: Esto está lleno de malas prácticas parte 1
+[[file:Creando_reportes_en_PDF/2020-05-10_23-27-19_Screenshot_20200510_232651.png]]
+
+#+DOWNLOADED: file:///home/sggutier/Bildoj/Screenshot_20200510_232635.png @ 2020-05-10 23:28:09
+#+attr_org: :width 500
+#+attr_html: :width 80%
+#+CAPTION: Malas prácticas 2: Descarga de PDF
+[[file:Creando_reportes_en_PDF/2020-05-10_23-28-09_Screenshot_20200510_232635.png]]
+
+
+

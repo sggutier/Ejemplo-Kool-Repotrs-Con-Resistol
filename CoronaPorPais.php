@@ -1,11 +1,11 @@
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
 
-use \koolreport\processes\CalculatedColumn;
-use \koolreport\processes\ColumnMeta;
-
 class CoronaPorPais extends \koolreport\KoolReport
 {
+    // Descomentar linea de abajo despues de comprar version pagada
+    // use \koolreport\export\Exportable;
+
     public function settings()
     {
         $this->dia = date('Y-m-d H:i:s');
